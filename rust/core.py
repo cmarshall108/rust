@@ -1,7 +1,7 @@
 import os
 import pygame
 from PIL import Image
-from rust import objects
+from rust import objects, task
 
 class CoreDisplay(objects.GameObject):
 
@@ -14,8 +14,8 @@ class CoreDisplay(objects.GameObject):
     def fill(self, color=None):
         self.surface.fill(color)
 
-    def flip(self, *args, **kwargs):
-        pygame.display.update(*args, **kwargs)
+    def flip(self):
+        pygame.display.flip()
 
     def update(self):
         self.fill(self.color)
@@ -66,15 +66,13 @@ class CoreRenderer(object):
 
     def __init__(self, engine):
         self.engine = engine
-
-    def get_game_objects(self):
-        return self.game_object_manager.game_objects.values()
+        self.game_object_manager = objects.GameObjectManager(engine)
 
     def setup(self):
-        self.game_object_manager = objects.GameObjectManager()
+        self.game_object_manager.setup()
 
     def update(self):
-        for game_object in self.get_game_objects():
+        for game_object in self.game_object_manager.get_game_objects():
             if not game_object.parent:
                 continue
 
@@ -92,7 +90,7 @@ class CoreRenderer(object):
         surface.parent = parent
 
     def destroy(self):
-        pass
+        self.game_object_manager.destroy()
 
 class CoreEngine(object):
 
@@ -100,6 +98,7 @@ class CoreEngine(object):
         self.display = CoreDisplay(self)
         self.loader = CoreLoader(self)
         self.renderer = CoreRenderer(self)
+        self.task_manager = task.TaskManager()
         self.shutdown = False
 
     def setup(self):
@@ -121,6 +120,8 @@ class CoreEngine(object):
             self.update()
 
     def run(self):
+        self.task_manager.run()
+
         try:
             self.mainloop()
         except (KeyboardInterrupt, SystemExit):

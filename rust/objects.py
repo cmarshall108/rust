@@ -6,7 +6,7 @@ class GameObject(object):
         self.id = id
         self.parent = None
         self._surface = surface
-        self._rect = surface.get_rect()
+        self._rect = surface.get_rect() if surface else None
 
     @property
     def surface(self):
@@ -40,6 +40,14 @@ class GameObject(object):
     @y.setter
     def y(self, y):
         self.rect.y = y
+
+    @property
+    def xy(self):
+        return (self._x, self._y)
+
+    @xy.setter
+    def xy(self, xy):
+        self.x, self.y = xy
 
     @property
     def center(self):
@@ -86,9 +94,8 @@ class GameObject(object):
         return (self._width, self._height)
 
     @size.setter
-    def size(self, (width, height)):
-        self.width = width
-        self.height = height
+    def size(self, size):
+        self.width, self.height = size
 
     def setup(self):
         pass
@@ -101,7 +108,8 @@ class GameObject(object):
 
 class GameObjectManager(object):
 
-    def __init__(self):
+    def __init__(self, engine):
+        self.engine = engine
         self.game_objects = {}
 
     @property
@@ -110,6 +118,18 @@ class GameObjectManager(object):
 
     def has_game_object(self, id):
         return id in self.game_objects
+
+    def get_game_objects(self):
+        return self.game_objects.values()
+
+    def setup(self):
+        self.update_task = self.engine.task_manager.add(self.update)
+
+    def update(self, task):
+        for game_object in self.get_game_objects():
+            game_object.update()
+
+        return task.cont
 
     def create(self, *args, **kwargs):
         game_object = GameObject(self.id, *args, **kwargs)
@@ -147,3 +167,9 @@ class GameObjectManager(object):
 
     def clear(self):
         self.game_objects = {}
+
+    def destroy(self):
+        self.engine.task_manager.remove(self.update_task)
+
+        for game_object in self.get_game_objects():
+            game_object.destroy()
