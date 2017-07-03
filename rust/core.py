@@ -1,5 +1,6 @@
 import os
 import pygame
+import pygame.locals
 from PIL import Image
 from rust import objects, task
 
@@ -125,7 +126,8 @@ class CoreEngine(object):
     def mainloop(self):
         while not self.shutdown:
             for event in pygame.event.get():
-                pass
+                if event.type == pygame.locals.QUIT:
+                    return
 
             self.update()
 
