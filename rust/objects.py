@@ -1,11 +1,12 @@
+import pygame
 
 class GameObject(object):
 
-    def __init__(self, id, surface):
+    def __init__(self, id=None, surface=None):
         self.id = id
         self.parent = None
         self._surface = surface
-        self._rect = None
+        self._rect = surface.get_rect()
 
     @property
     def surface(self):
@@ -41,6 +42,30 @@ class GameObject(object):
         self.rect.y = y
 
     @property
+    def center(self):
+        return self.rect.center
+
+    @center.setter
+    def center(self, center):
+        self.rect.center = center
+
+    @property
+    def centerx(self):
+        return self.rect.centerx
+
+    @centerx.setter
+    def centerx(self, centerx):
+        self.rect.centerx = centerx
+
+    @property
+    def centery(self):
+        return self.rect.centery
+
+    @centery.setter
+    def centery(self, centery):
+        self.rect.centery = centery
+
+    @property
     def width(self):
         return self.rect.width
 
@@ -56,6 +81,15 @@ class GameObject(object):
     def height(self, height):
         self.surface = pygame.transform.scale(self._surface, (self._rect.width, height))
 
+    @property
+    def size(self):
+        return (self._width, self._height)
+
+    @size.setter
+    def size(self, (width, height)):
+        self.width = width
+        self.height = height
+
     def setup(self):
         pass
 
@@ -70,11 +104,23 @@ class GameObjectManager(object):
     def __init__(self):
         self.game_objects = {}
 
+    @property
+    def id(self):
+        return len(self.game_objects) + 1
+
     def has_game_object(self, id):
         return id in self.game_objects
 
     def create(self, *args, **kwargs):
-        game_object = GameObject(len(self.game_objects) + 1, *args, **kwargs)
+        game_object = GameObject(self.id, *args, **kwargs)
+        game_object.setup()
+
+        self.add(game_object)
+
+        return game_object
+
+    def create_with(self, class_object, *args, **kwargs):
+        game_object = class_object(self.id, *args, **kwargs)
         game_object.setup()
 
         self.add(game_object)
