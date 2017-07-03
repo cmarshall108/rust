@@ -55,6 +55,9 @@ class CoreLoader(object):
     def load_object(self, class_object):
         return self.engine.renderer.game_object_manager.create_with(class_object, None)
 
+    def load_scene(self, *args, **kwargs):
+        return self.engine.renderer.game_object_manager.create_scene(*args, **kwargs)
+
     def destroy(self):
         pass
 
@@ -73,6 +76,9 @@ class CoreRenderer(object):
         self.game_object_manager.setup()
 
     def update(self):
+        if self.game_object_manager.active_scene:
+            self.game_object_manager.active_scene.update()
+
         for game_object in self.game_object_manager.get_game_objects():
             if not game_object.parent or game_object.surface.get_locked():
                 continue
@@ -89,6 +95,9 @@ class CoreRenderer(object):
             parent = self.engine.display.surface
 
         surface.parent = parent
+
+    def render_scene(self, scene_object):
+        self.game_object_manager.active_scene = scene_object
 
     def destroy(self):
         self.game_object_manager.destroy()
