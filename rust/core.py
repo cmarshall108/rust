@@ -5,11 +5,12 @@ from rust import objects, task
 
 class CoreDisplay(objects.GameObject):
 
-    def __init__(self, engine, resolution=[800, 600], flags=pygame.DOUBLEBUF | pygame.HWSURFACE | pygame.RESIZABLE, depth=0):
+    def __init__(self, engine, width, height, flags=pygame.DOUBLEBUF | pygame.HWSURFACE | pygame.RESIZABLE, depth=0):
+        super(CoreDisplay, self).__init__()
+
         self.engine = engine
         self.color = pygame.Color(0, 0, 0)
-        self._surface = pygame.display.set_mode(resolution, flags, depth)
-        self._rect = None
+        self.surface = pygame.display.set_mode([width, height], flags, depth)
 
     def fill(self, color=None):
         self.surface.fill(color)
@@ -73,7 +74,7 @@ class CoreRenderer(object):
 
     def update(self):
         for game_object in self.game_object_manager.get_game_objects():
-            if not game_object.parent:
+            if not game_object.parent or game_object.surface.get_locked():
                 continue
 
             game_object.parent.blit(game_object.surface, game_object.rect)
@@ -94,8 +95,8 @@ class CoreRenderer(object):
 
 class CoreEngine(object):
 
-    def __init__(self):
-        self.display = CoreDisplay(self)
+    def __init__(self, height=800, width=600):
+        self.display = CoreDisplay(self, height, width)
         self.loader = CoreLoader(self)
         self.renderer = CoreRenderer(self)
         self.task_manager = task.TaskManager()

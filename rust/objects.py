@@ -91,7 +91,7 @@ class GameObject(object):
 
     @property
     def size(self):
-        return (self._width, self._height)
+        return (self.rect.width, self.rect.height)
 
     @size.setter
     def size(self, size):
